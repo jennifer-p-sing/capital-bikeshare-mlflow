@@ -16,10 +16,12 @@ This project supports two interchangeable methods for loading the daily dataset,
 1. **Option A: Live API Ingestion (`ucimlrepo`)**
    - Dynamically fetches the dataset directly from the UCI Machine Learning Repository at runtime.
    - Ideal for automated CI/CD pipelines or clean environments where local data files are not pre-packaged.
+   - Samples: 17,378 (as of 15/10/2026)
 
 2. **Option B: Local CSV Ingestion (`data/day.csv`)**
    - Loads the pre-downloaded daily snapshot directly from the local `data/` directory.
    - Acts as a reliable offline fallback option if network or firewall restrictions prevent live API fetching during review.
+   - Samples 730
 
 *Note on Tracking:* Regardless of the ingestion method chosen, the resulting data is normalized identically and logged with a specific data source tag (`uci_api` vs. `local_csv`) inside MLflow to maintain full experiment traceability.
 ---
@@ -84,7 +86,7 @@ When prompted, choose a data source:
 The pipeline automatically:
 
 1. Performs time-series feature engineering using **Lag 1 features a.k.a. Yesterday's value**.
-2. Splits the dataset chronologically into **80% training** and **20% testing**.
+2. Splits the dataset chronologically into **70% training** and **30% testing**.
 3. Trains and evaluates the **Benchmark**, **Linear Regression**, and **Random Forest Regressor**.
 4. Logs parameters, evaluation metrics, and model versions to the local MLflow tracking database (`mlflow.db`).
 
