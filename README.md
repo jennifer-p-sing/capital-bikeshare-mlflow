@@ -21,10 +21,9 @@ This project uses a **local CSV dataset (`data/day.csv`)** containing historical
 | File | `data/day.csv` |
 | Observations | 730 daily records |
 | Data Frequency | Daily |
-| Target Variable | `cnt` — Total daily bike rentals |
+| Target Variable | `cnt` - Total daily bike rentals |
 | Ingestion Method | Local CSV |
 
-The dataset is stored directly in the project's `data/` directory and loaded using Pandas.
 ---
 
 ## Project Structure
