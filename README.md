@@ -47,7 +47,7 @@ capital-bikeshare-mlflow/
 - Python and `pip` installed
 - A terminal or command prompt
 - The project directory (`capital-bikeshare-mlflow/`)
-- For the local CSV option: `data/day.csv`
+- Data: `data/day.csv`
 
 ## Getting Started
 
