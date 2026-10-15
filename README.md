@@ -9,21 +9,22 @@ To maintain full traceability across different feature settings, hyperparameters
 
 ---
 
-## Data Ingestion Options & Traceability
+## Data Ingestion  & Traceability
+This project uses a **local CSV dataset (`data/day.csv`)** containing historical daily bike rental records from the UCI Bike Sharing Dataset.
 
-This project supports two interchangeable methods for loading the daily dataset, managed via an interactive prompt when executing the training script:
+### Dataset Information
 
-1. **Option A: Live API Ingestion (`ucimlrepo`)**
-   - Dynamically fetches the dataset directly from the UCI Machine Learning Repository at runtime.
-   - Ideal for automated CI/CD pipelines or clean environments where local data files are not pre-packaged.
-   - Samples: 17,378 (as of 15/10/2026)
+| Attribute | Description |
+| --- | --- |
+| Dataset | Bike Sharing Dataset |
+| Source | UCI Machine Learning Repository |
+| File | `data/day.csv` |
+| Observations | 730 daily records |
+| Data Frequency | Daily |
+| Target Variable | `cnt` — Total daily bike rentals |
+| Ingestion Method | Local CSV |
 
-2. **Option B: Local CSV Ingestion (`data/day.csv`)**
-   - Loads the pre-downloaded daily snapshot directly from the local `data/` directory.
-   - Acts as a reliable offline fallback option if network or firewall restrictions prevent live API fetching during review.
-   - Samples 730
-
-*Note on Tracking:* Regardless of the ingestion method chosen, the resulting data is normalized identically and logged with a specific data source tag (`uci_api` vs. `local_csv`) inside MLflow to maintain full experiment traceability.
+The dataset is stored directly in the project's `data/` directory and loaded using Pandas.
 ---
 
 ## Project Structure
@@ -31,7 +32,7 @@ This project supports two interchangeable methods for loading the daily dataset,
 capital-bikeshare-mlflow/
 │
 ├── data/
-│   └── day.csv           # Local dataset copy (optional fallback)
+│   └── day.csv           # Local dataset
 ├── src/
 │   └── train_pipeline.py # Unified interactive training & MLflow logging script
 ├── .gitignore            # Git exclusion rules
@@ -66,7 +67,13 @@ Install the required Python packages from `requirements.txt`:
 pip install -r requirements.txt
 ```
 
-The dependencies include `mlflow`, `scikit-learn`, `ucimlrepo`, `pandas`, and `numpy`.
+The main dependencies include:
+
+- `mlflow` — Experiment tracking and Model Registry
+- `scikit-learn` — Machine learning models and evaluation
+- `pandas` — Dataset loading and preprocessing
+- `numpy` — Numerical computations
+
 
 ### 3. Run the training pipeline
 
@@ -76,26 +83,33 @@ Execute the main training script:
 python src/train_pipeline.py
 ```
 
-When prompted, choose a data source:
-
-| Option | Input | Description |
-| --- | --- | --- |
-| **A: Live API** (default) | Press **Enter** | Fetches the dataset from the UCI Machine Learning Repository via `ucimlrepo`. |
-| **B: Local CSV** | Type `csv` and press **Enter** | Loads the dataset from `data/day.csv`. |
-
 The pipeline automatically:
 
-1. Performs time-series feature engineering using **Lag 1 features a.k.a. Yesterday's value**.
-2. Splits the dataset chronologically into **70% training** and **30% testing**.
-3. Trains and evaluates the **Benchmark**, **Linear Regression**, and **Random Forest Regressor**.
-4. Logs parameters, evaluation metrics, and model versions to the local MLflow tracking database (`mlflow.db`).
+1. Loads the historical daily bike rental dataset from `data/day.csv`.
+2. Performs time-series feature engineering using **Lag 1 features (yesterday's values)**.
+3. Splits the dataset chronologically into **70% training** and **30% testing**.
+4. Trains and evaluates three forecasting approaches:
+   - **Benchmark:** Yesterday's total rentals as tomorrow's forecast.
+   - **Linear Regression:** A regression model using historical features.
+   - **Random Forest Regressor:** An ensemble learning model capturing nonlinear relationships.
+5. Calculates evaluation metrics for model comparison.
+6. Logs experiment parameters, evaluation metrics, and model versions to MLflow using the local tracking database (`mlflow.db`).
+
 
 
 **Evaluation metrics:**
 
-- **MAE** — Mean Absolute Error
-- **RMSE** — Root Mean Squared Error
-- **MAPE** — Mean Absolute Percentage Error
+| Metric | Description |
+| --- | --- |
+| **MAE** | Mean Absolute Error — Average absolute difference between predicted and actual rentals. |
+| **RMSE** | Root Mean Squared Error — Penalizes larger prediction errors more heavily. |
+| **MAPE** | Mean Absolute Percentage Error — Expresses prediction errors as a percentage of actual rentals. |
+
+
+Lower values indicate better forecasting performance across all three metrics.
+
+The benchmark serves as the baseline for determining whether machine learning models provide meaningful improvements in daily demand forecasting.
+
 
 ### 4. Launch the MLflow UI
 
@@ -109,16 +123,28 @@ Open the following URL in your browser:
 
 **http://127.0.0.1:5000**
 
-Use the dashboard to inspect experiment runs, compare model metrics, and verify registered models.
+Use the dashboard to:
+
+- Inspect individual experiment runs.
+- Compare benchmark and machine learning model performance.
+- Review logged parameters and evaluation metrics.
+- Examine tracked model artifacts and registered model versions.
+
 
 ## Quick Start
 
 ```bash
+# Navigate to project directory
 cd capital-bikeshare-mlflow
+
+# Install required dependencies
 pip install -r requirements.txt
+
+# Run training using data/day.csv
 python src/train_pipeline.py
-# Choose Enter for the live API or type csv for the local dataset.
+
+# Launch MLflow dashboard
 python -m mlflow ui
 ```
 
-Then visit **http://127.0.0.1:5000**.
+Then visit **http://127.0.0.1:5000** to review the experiment results.

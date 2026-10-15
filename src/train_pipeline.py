@@ -13,22 +13,11 @@ mlflow.set_tracking_uri("sqlite:///mlflow.db")
 # 1. Initialize MLflow Experiment
 mlflow.set_experiment("capital_bikeshare_workload_forecasting")
 
-# 2. Interactive Prompt to Choose Data Source
+# 2. # 2. Load Dataset from Local CSV
 print("=== Capital Bikeshare MLOps Pipeline ===")
-choice = input("Choose data source -> Type 'csv' for local file or press Enter for live API (ucimlrepo): ").strip().lower()
-
-if choice == 'csv':
-    print("Loading dataset from local CSV file (data/day.csv)...")
-    df = pd.read_csv('data/day.csv')
-    source_tag = "local_csv"
-else:
-    print("Fetching dataset dynamically from UCI repository via API...")
-    from ucimlrepo import fetch_ucirepo
-    bike_sharing = fetch_ucirepo(id=275)
-    X_raw = bike_sharing.data.features
-    y_raw = bike_sharing.data.targets
-    df = pd.concat([X_raw, y_raw], axis=1)
-    source_tag = "uci_api"
+print("Loading dataset from local CSV file (data/day.csv)...")
+df = pd.read_csv('data/day.csv')
+source_tag = "local_csv" # I initially coded it using 2 sources: api and local csv. I removed the api (bec it was hourly) so that i do not have to adjust the whole code I just kept this source tag
 
 # 3. Data Preparation & Feature Engineering for Time-Series Forecast
 df['dteday'] = pd.to_datetime(df['dteday'])
@@ -36,7 +25,7 @@ df = df.sort_values('dteday').reset_index(drop=True)
 
 # Target is tomorrow's total rentals ('cnt'). 
 df['target'] = df['cnt']
-df['lag_cnt'] = df['cnt'].shift(1)
+df['lag_cnt'] = df['cnt'].shift(1) #containing yesterday's total rentals for each row coz i already ordered it by date. This is the benchmark model for tomorrow's rentals prediction.
 df_clean = df.dropna(subset=['lag_cnt']).copy()
 
 features = ['lag_cnt', 'season', 'yr', 'mnth', 'holiday', 'weekday', 'workingday', 'weathersit', 'temp', 'hum', 'windspeed']
