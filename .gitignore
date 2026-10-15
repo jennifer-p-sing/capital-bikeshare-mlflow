@@ -1,0 +1,10 @@
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# MLflow tracking files (prevent committing local db/runs to github)
+mlruns/
+mlflow.db
